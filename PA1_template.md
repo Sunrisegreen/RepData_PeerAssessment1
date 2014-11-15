@@ -671,20 +671,17 @@ Adding the YAML with &quot;keep_md: true&quot; will prevent RStudio from erasing
   </tbody>
 </table><h2>
 <a id="user-content-loading-and-preprocessing-the-data" class="anchor" href="#loading-and-preprocessing-the-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading and preprocessing the data</h2>
-Let us first read the data file into an R data frame.
 
 ```r
 data = read.csv("activity.csv",header=TRUE,na.strings="NA")
 ```
 <h2>
 <a id="user-content-what-is-mean-total-number-of-steps-taken-per-day" class="anchor" href="#what-is-mean-total-number-of-steps-taken-per-day" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is mean total number of steps taken per day?</h2>
-We will now convert the date variable to Date type using as.Date() function. We then find sum of steps taken grouped by day using aggregate() function. We remove observations which have "NA" value in 'steps' variable.
 
 ```r
 data$date = as.Date(as.character(data$date),"%d-%m-%Y")
 sumofsteps = aggregate(data$steps,by=list(Date = data$date),FUN=sum,na.rm=TRUE)
 ```
-Below is the histogram for total number of steps taken each day:
 
 ```r
 hist(sumofsteps$x,xlab="Total steps taken each day",main="Histogram of total steps taken each day")
@@ -692,17 +689,23 @@ hist(sumofsteps$x,xlab="Total steps taken each day",main="Histogram of total ste
 
 ![plot of chunk plot](figure/plot-1.png) 
 
-We now calculate the mean and median of total number of steps taken per day.
+```r
+mean(sumofsteps$x)
+```
+
+```
+## [1] 9354.23
+```
 
 ```r
-mean = mean(sumofsteps$x)
-median = median(sumofsteps$x)
+median(sumofsteps$x)
 ```
-The mean of total steps taken per day is 9354.2295082.
-The median of total steps taken per day is 10395.
+
+```
+## [1] 10395
+```
 <h2>
 <a id="user-content-what-is-the-average-daily-activity-pattern" class="anchor" href="#what-is-the-average-daily-activity-pattern" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is the average daily activity pattern?</h2>
-To find the average number of steps taken across all days within each interval, we will use agregate() function.
 
 ```r
 meanofsteps = aggregate(data$steps,by=list(Interval = data$interval),FUN=mean,na.rm=TRUE)
@@ -716,20 +719,23 @@ axis(1, xaxp=c(0, 2355,24), las=2)
 ![plot of chunk lineplot](figure/lineplot-1.png) 
 
 ```r
-maxsteps = meanofsteps[meanofsteps$x==max(meanofsteps$x),]
+meanofsteps[meanofsteps$x==max(meanofsteps$x),]
 ```
-The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is 835.
+
+```
+##     Interval        x
+## 104      835 206.1698
+```
 <h2>
 <a id="user-content-imputing-missing-values" class="anchor" href="#imputing-missing-values" aria-hidden="true"><span class="octicon octicon-link"></span></a>Imputing missing values</h2>
-###Number of missing values
-We calculate total number of missing values by subsetting using the is.na() function:
 
 ```r
-m = nrow(data[is.na(data$steps),])
+nrow(data[is.na(data$steps),])
 ```
-The total number of missing values is 2304.
 
-###Create new dataset with NAs filled in with mean of that interval
+```
+## [1] 2304
+```
 
 ```r
 newdata = data
@@ -744,7 +750,6 @@ for(i in 1:nrow(newdata)){
     }
 }
 ```
-We now plot the histogram for total steps taken per day for the new data set.
 
 ```r
 newsumofsteps = aggregate(newdata$steps,by=list(Date = newdata$date),FUN=sum,na.rm=TRUE)
@@ -753,20 +758,23 @@ hist(newsumofsteps$x,xlab="Total steps taken each day",main="Histogram of total 
 
 ![plot of chunk newplot](figure/newplot-1.png) 
 
-Below is the calculation for mean and median of the total steps taken per day for the new data set.
+```r
+mean(newsumofsteps$x)
+```
+
+```
+## [1] 10766.19
+```
 
 ```r
-mean1 = mean(newsumofsteps$x)
-median1 = median(newsumofsteps$x)
+median(newsumofsteps$x)
 ```
-The mean of total steps taken per day is 1.0766189 &times; 10<sup>4</sup>.
 
-The median of total steps taken per day is 1.0766189 &times; 10<sup>4</sup>.
-
-As can be seen from above data, imputing the missing values has reduced the frequency in the lowest range of steps and increased the concentration of values around mean (closer to normal curve)
+```
+## [1] 10766.19
+```
 <h2>
 <a id="user-content-are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="anchor" href="#are-there-differences-in-activity-patterns-between-weekdays-and-weekends" aria-hidden="true"><span class="octicon octicon-link"></span></a>Are there differences in activity patterns between weekdays and weekends?</h2>
-To find differences in activity patterns between weekdays and wekends, we create a new factor variable 'wk'.We then find the average steps taken, grouped by this factor variable and interval.
 
 ```r
 newdata$wk = ifelse(weekdays(newdata$date) %in% c("Saturday","Sunday"),"weekend","weekday" )
